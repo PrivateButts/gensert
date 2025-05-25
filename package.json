@@ -1,0 +1,24 @@
+{
+  "name": "gensert",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.7",
+    "daisyui": "^5.0.37",
+    "konva": "^9.3.20",
+    "tailwindcss": "^4.1.7",
+    "unplugin-vue-components": "^28.5.0",
+    "vue": "^3.5.13",
+    "vue-konva": "^3.2.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.3.5"
+  }
+}
