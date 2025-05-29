@@ -1,5 +1,5 @@
 <template>
-    <input type="image" name="image-upload" @change="handleImageChange" accept="image/*" />
+    <input type="file" name="image-upload" @change="handleImageChange" accept="image/*" />
 </template>
 
 
