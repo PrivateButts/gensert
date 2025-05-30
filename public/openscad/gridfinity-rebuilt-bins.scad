@@ -34,6 +34,9 @@ use <gridfinity-rebuilt-holes.scad>
 $fa = 8;
 $fs = 0.25; // .01
 
+/* [Custom Settings] */
+outline_depth = 20;
+
 /* [General Settings] */
 // number of bases along x-axis
 gridx = 3;
@@ -46,9 +49,9 @@ half_grid = false;
 
 /* [Linear Compartments] */
 // number of X Divisions (set to zero to have solid bin)
-divx = 1;
+divx = 0;
 // number of Y Divisions (set to zero to have solid bin)
-divy = 1;
+divy = 0;
 
 /* [Cylindrical Compartments] */
 // number of cylindrical X Divisions (mutually exclusive to Linear Compartments)
@@ -88,9 +91,9 @@ scoop = 1; //[0:0.1:1]
 // only cut magnet/screw holes at the corners of the bin to save uneccesary print time
 only_corners = false;
 //Use gridfinity refined hole style. Not compatible with magnet_holes!
-refined_holes = true;
+refined_holes = false;
 // Base will have holes for 6mm Diameter x 2mm high magnets.
-magnet_holes = false;
+magnet_holes = true;
 // Base will have holes for M3 screws.
 screw_holes = false;
 // Magnet holes will have crush ribs to hold the magnet.
@@ -108,15 +111,18 @@ grid_dimensions = GRID_DIMENSIONS_MM / (half_grid ? 2 : 1);
 // ===== IMPLEMENTATION ===== //
 
 //color("tomato") {
-gridfinityInit(gridx, gridy, height(gridz, gridz_define, style_lip, enable_zsnap), height_internal, grid_dimensions=grid_dimensions, sl=style_lip) {
+difference(){
+    gridfinityInit(gridx, gridy, height(gridz, gridz_define, style_lip, enable_zsnap), height_internal, grid_dimensions=grid_dimensions, sl=style_lip) {
 
-  if (divx > 0 && divy > 0) {
+      if (divx > 0 && divy > 0) {
 
-    cutEqual(n_divx=divx, n_divy=divy, style_tab=style_tab, scoop_weight=scoop, place_tab=place_tab);
-  } else if (cdivx > 0 && cdivy > 0) {
+        cutEqual(n_divx=divx, n_divy=divy, style_tab=style_tab, scoop_weight=scoop, place_tab=place_tab);
+      } else if (cdivx > 0 && cdivy > 0) {
 
-    cutCylinders(n_divx=cdivx, n_divy=cdivy, cylinder_diameter=cd, cylinder_height=ch, coutout_depth=c_depth, orientation=c_orientation, chamfer=c_chamfer);
-  }
+        cutCylinders(n_divx=cdivx, n_divy=cdivy, cylinder_diameter=cd, cylinder_height=ch, coutout_depth=c_depth, orientation=c_orientation, chamfer=c_chamfer);
+      }
+    };
+    #translate([0,0,height(gridz, gridz_define, style_lip, enable_zsnap)-outline_depth+BASE_HEIGHT]) linear_extrude(height=outline_depth) import("outline.svg", center=true);
 }
 gridfinityBase([gridx, gridy], grid_dimensions=grid_dimensions, hole_options=hole_options, only_corners=only_corners || half_grid, thumbscrew=enable_thumbscrew);
 //}
