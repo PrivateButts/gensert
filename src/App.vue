@@ -5,6 +5,7 @@
     </div>
     <ImageUpload @change="handleImageUpdate" />
     <DrawingCanvas v-if="selectedImage" :image="selectedImage" />
+    <PreviewModel />
   </div>
 </template>
 
