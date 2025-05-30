@@ -8,173 +8,169 @@
                     Scale
                 </label>
                 <label class="label">
-                    <input type="radio" v-model="activeTool" value="outline" class="radio" />
-                    Outline
+                    <input type="radio" v-model="activeTool" value="outlineDraw" class="radio" />
+                    Draw Outline
+                </label>
+                <label class="label">
+                    <input type="radio" v-model="activeTool" value="outlineMove" class="radio" />
+                    Move Outline
                 </label>
             </fieldset>
 
             <input type="number" class="input" min="1" v-model="scaleLineDistance" />
             <input type="range" class="input" min="0" max="1" step=".01" v-model="outlineTension">
+            <button class="btn btn-primary" @click="exportOutline">Export Outline</button>
         </div>
-        <v-stage :config="configKonva" ref="stage" @click="dispatchClick">
-            <v-layer>
-                <v-image v-if="image" :config="configImage" />
-            </v-layer>
-            <v-layer>
-                <v-line :config="configScaleLine"></v-line>
-            </v-layer>
-            <v-layer v-if="outlinePoints.length > 1">
-                <v-line :config="configOutline"></v-line>
-            </v-layer>
-        </v-stage>
+        <div class="relative" @click="dispatchClick">
+            <img :src="image" alt="">
+            <svg class="absolute top-0 left-0 w-full h-full" id="scaleLine">
+                <line v-if="canShowScaleLine" :x1="scaleLineA.x" :y1="scaleLineA.y" :x2="scaleLineB.x"
+                    :y2="scaleLineB.y" stroke="orange" stroke-width="4" />
+            </svg>
+            <svg class="absolute top-0 left-0 w-full h-full" id="outline">
+                <polygon v-if="outlinePoints.length > 0" :points="outlinePath" fill="none" stroke="blue"
+                    stroke-width="4" />
+                <circle v-for="(pnt, i) in outlinePoints" :cx="pnt.x" :cy="pnt.y" r="5" fill="red" :key="i"
+                    @click.stop="removeOutlinePoint(i)" />
+            </svg>
+            <svg class="absolute top-0 left-0 w-full h-full" id="outlineExport">
+                <g :transform="`scale(${calcedScale})`">
+                    <polygon v-if="outlinePoints.length > 0" :points="outlinePath" fill="none" stroke="blue"
+                        stroke-width="4" />
+                </g>
+            </svg>
+            <!-- <svg class="absolute top-0 left-0 w-full h-full" id="grabs">
+                <line v-if="scaleLinePoints.every(x => x > 0)" :x1="scaleLinePoints[0]" :y1="scaleLinePoints[1]"
+                    :x2="scaleLinePoints[2]" :y2="scaleLinePoints[3]" stroke="orange" stroke-width="4" />
+            </svg> -->
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
-import { useImage } from 'vue-konva'
 
 const props = defineProps(['image'])
-
-const stage = ref(null)
-
-const configKonva = ref({
-    width: window.innerWidth * .9,
-    height: window.innerHeight
-})
-
-const configCircle = ref({
-    x: 100,
-    y: 100,
-    radius: 70,
-    fill: "red",
-    stroke: "black",
-    strokeWidth: 4
-})
 
 const activeTool = ref('scale')
 
 const imageWidth = ref(0)
 const imageHeight = ref(0)
 
-const scaleLinePoints = ref([0, 0, 0, 0])
-let scalePntSetA = true
+const scaleLineA = ref(null)
+const scaleLineB = ref(null)
 const scaleLineDistance = ref(10)
 
 const outlinePoints = ref([])
 const outlineTension = ref(0)
 
-const configImage = ref({
-    x: 0,
-    y: 0,
-    image: useImage(props.image)[0],
-    width: imageWidth,
-    height: imageHeight
-})
-
-const configScaleLine = computed(() => {
-    return {
-        x: 0,
-        y: 0,
-        points: scaleLinePoints.value,
-        stroke: activeTool.value === 'scale' ? "orange" : "gray",
-        tension: 0,
-        closed: false,
-    }
-})
-
 const canShowScaleLine = computed(() => {
-    return scaleLinePoints.value.every(pnt => pnt !== 0)
+    return scaleLineA.value && scaleLineB.value
 })
 
-const configOutline = computed(() => {
-    return {
-        x: 0,
-        y: 0,
-        points: outlinePoints.value,
-        stroke: activeTool.value === 'outline' ? "blue" : "gray",
-        tension: parseFloat(outlineTension.value),
-        closed: true,
-    }
+const calcedScale = computed(() => {
+    if (!canShowScaleLine.value) return 1
+    const measuredDistance = Math.sqrt(Math.pow(scaleLineA.value.x - scaleLineB.value.x, 2) + Math.pow(scaleLineA.value.y - scaleLineB.value.y, 2))
+    return scaleLineDistance.value / measuredDistance
 })
 
+const outlinePath = computed(() => {
+    if (outlinePoints.value.length === 0) return ""
+    let points = ""
 
-function redrawStage() {
-    stage.value.getNode().batchDraw()
-}
+    outlinePoints.value.forEach(pnt => {
+        points += `${pnt.x}, ${pnt.y} `
+    });
 
-
-onMounted(() => {
-    calcImageContain(props.image).then((result) => {
-        configImage.value.width = result.width
-        configImage.value.height = result.height
-    }).catch((error) => {
-        console.error('Error calculating image size:', error)
-    })
+    return points
 })
-
-
-async function calcImageContain(imgBlob) {
-    const img = new Image()
-
-    return new Promise((resolve, reject) => {
-        img.onload = () => {
-            const imageWidth = img.width
-            const imageHeight = img.height
-            const containerWidth = configKonva.value.width
-            const containerHeight = configKonva.value.height
-
-            const scaleX = containerWidth / imageWidth
-            const scaleY = containerHeight / imageHeight
-            const scale = Math.min(scaleX, scaleY)
-
-            return resolve({
-                width: imageWidth * scale,
-                height: imageHeight * scale
-            })
-        }
-        img.onerror = reject;
-        img.src = imgBlob
-    })
-}
 
 function addScaleLinePoint(event) {
     console.debug('addScaleLinePoint', event)
-    const mousePos = stage.value.getNode().getPointerPosition();
-    if (scalePntSetA) {
-        scaleLinePoints.value[0] = mousePos.x
-        scaleLinePoints.value[1] = mousePos.y
-    } else {
-        scaleLinePoints.value[2] = mousePos.x
-        scaleLinePoints.value[3] = mousePos.y
-    }
-    scalePntSetA = !scalePntSetA
+    const X = event.offsetX
+    const Y = event.offsetY
 
-    redrawStage()
+    if (!canShowScaleLine.value) {
+        if (!scaleLineA.value) {
+            scaleLineA.value = { x: X, y: Y }
+        } else if (!scaleLineB.value) {
+            scaleLineB.value = { x: X, y: Y }
+        }
+        return
+    }
+
+    const dToA = Math.sqrt(Math.pow(X - scaleLineA.value.x, 2) + Math.pow(Y - scaleLineA.value.y, 2))
+    const dToB = Math.sqrt(Math.pow(X - scaleLineB.value.x, 2) + Math.pow(Y - scaleLineB.value.y, 2))
+
+    if (dToA < dToB) {
+        scaleLineA.value.x = X
+        scaleLineA.value.y = Y
+    } else {
+        scaleLineB.value.x = X
+        scaleLineB.value.y = Y
+    }
 }
 
 
 function addOutlinePoint(event) {
     console.debug('addOutlinePoint', event)
-    const mousePos = stage.value.getNode().getPointerPosition();
+    const X = event.offsetX
+    const Y = event.offsetY
 
-    outlinePoints.value.push(mousePos.x, mousePos.y)
-    redrawStage()
+    outlinePoints.value.push({ x: X, y: Y })
 }
 
+
+function removeOutlinePoint(index) {
+    outlinePoints.value.splice(index, 1)
+}
+
+
+function moveOutlinePoint(event) {
+    const X = event.offsetX
+    const Y = event.offsetY
+
+    const distances = outlinePoints.value.map(point => {
+        const dx = point.x - X
+        const dy = point.y - Y
+        return Math.sqrt(dx * dx + dy * dy)
+    })
+    const minIndex = distances.indexOf(Math.min(...distances))
+    outlinePoints.value[minIndex] = { x: X, y: Y }
+}
 
 function dispatchClick(event) {
     switch (activeTool.value) {
         case 'scale':
             addScaleLinePoint(event)
             break;
-        case 'outline':
+        case 'outlineDraw':
             addOutlinePoint(event)
+            break;
+        case 'outlineMove':
+            moveOutlinePoint(event)
             break;
         default:
             console.warn("Unknown tool")
             break;
     }
+}
+
+
+function exportOutline() {
+    const svgElm = document.getElementById('outlineExport')
+    const name = "outline.svg";
+    svgElm.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgElm.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], { type: "image/svg+xml;charset=utf-8" });
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = name;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
 }
 
 
