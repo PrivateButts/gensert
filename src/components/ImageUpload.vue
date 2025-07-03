@@ -1,5 +1,9 @@
 <template>
-    <input type="file" name="image-upload" @change="handleImageChange" accept="image/*" />
+    <fieldset class="fieldset w-xs">
+        <legend class="fieldset-legend">Reference Image for SVG Outline</legend>
+        <input type="file" name="image-upload" class="file-input" @change="handleImageChange" accept="image/*" />
+        <p class="label">Image should be directly of the object you want to trace, without any skew or rotation</p>
+    </fieldset>
 </template>
 
 

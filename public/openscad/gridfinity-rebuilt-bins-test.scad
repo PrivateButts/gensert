@@ -24,9 +24,9 @@ https://github.com/kennetek/gridfinity-rebuilt-openscad
 
 */
 
-include </standard.scad>
-use </gridfinity-rebuilt-utility.scad>
-use </gridfinity-rebuilt-holes.scad>
+include <standard.scad>
+use <gridfinity-rebuilt-utility.scad>
+use <gridfinity-rebuilt-holes.scad>
 
 // ===== PARAMETERS ===== //
 
@@ -124,9 +124,9 @@ difference() {
   }
   ; if (height_internal > 0) {
     // If height_internal is set, we will use it to cut the top of the bin.
-    #translate([0, 0, height(height_internal, 1, 0, false) - outline_depth + BASE_HEIGHT]) linear_extrude(height=outline_depth) import("/outline.svg", center=true);
+    #translate([0, 0, height(height_internal, 1, 0, false) - outline_depth + BASE_HEIGHT]) linear_extrude(height=outline_depth) import("outline.svg", center=true);
   } else {
-    #translate([0, 0, height(gridz, gridz_define, style_lip, enable_zsnap) - outline_depth + BASE_HEIGHT]) linear_extrude(height=outline_depth) import("/outline.svg", center=true);
+    #translate([0, 0, height(gridz, gridz_define, style_lip, enable_zsnap) - outline_depth + BASE_HEIGHT]) linear_extrude(height=outline_depth) import("outline.svg", center=true);
   }
 }
 gridfinityBase([gridx, gridy], grid_dimensions=grid_dimensions, hole_options=hole_options, only_corners=only_corners || half_grid, thumbscrew=enable_thumbscrew);
