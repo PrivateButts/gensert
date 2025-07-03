@@ -136,14 +136,14 @@ const hole_selection = ref('magnet_holes')
 
 const scadFile = {
     name: "gridfinity-rebuilt-bins.scad",
-    url: "/public/openscad/gridfinity-rebuilt-bins.scad"
+    url: "/openscad/gridfinity-rebuilt-bins.scad"
 }
 
 const scadResourceNames = [
     "generic-helpers.scad", "gridfinity-rebuilt-utility.scad", "threads.scad", "gridfinity-baseplate.scad", "gridfinity-rebuilt-holes.scad", "standard.scad"
 ]
 
-const scadResources = scadResourceNames.map(name => ({ name, url: `/public/openscad/${name}` }))
+const scadResources = scadResourceNames.map(name => ({ name, url: `/openscad/${name}` }))
 
 onMounted(async () => {
     fetchResource(scadFile)
