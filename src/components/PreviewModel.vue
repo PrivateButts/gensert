@@ -1,5 +1,5 @@
 <template>
-    <form class="px-5 mt-2 mb-5">
+    <form class="px-5 mt-2 mb-5" @submit.prevent="generateBtnHandler">
         <legend>Generation Settings</legend>
 
         <div class="columns-sm">
