@@ -8,6 +8,12 @@
       <DrawingCanvas v-if="selectedImage" :image="selectedImage" @change="handleSVGUpdate" />
       <PreviewModel :forceDisabled="!readyToGenerate" :outline="outline" :outputName="'bin-outline.stl'" />
     </div>
+    <footer class="footer footer-center bg-base-200 text-base-content p-4 mt-6">
+      <nav class="flex gap-4">
+        <a class="link link-hover" href="https://github.com/PrivateButts/gensert" target="_blank" rel="noopener">GitHub</a>
+        <a class="link link-hover" href="https://github.com/PrivateButts/gensert/issues/new" target="_blank" rel="noopener">Report an issue</a>
+      </nav>
+    </footer>
   </div>
 </template>
 
